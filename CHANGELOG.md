@@ -7,6 +7,11 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-03-23
+
+### Fixed
+- Bumped the packaged project version so release artifacts and CLI version output match the published tag
+
 ## [0.1.1] - 2026-03-23
 
 ### Fixed
