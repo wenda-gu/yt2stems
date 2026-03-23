@@ -16,10 +16,26 @@ In a clean development environment:
 ```bash
 python -m pip install --upgrade pip
 python -m pip install -e '.[dev]'
-python -m build
-python -m unittest
-ruff check .
+make check
 ```
+
+## First public release
+
+The repository is currently staged for the first public tag: `v0.1.0`.
+
+Recommended command sequence:
+
+```bash
+git checkout main
+git pull --ff-only origin main
+python -m pip install -e '.[dev]'
+make check
+git tag -a v0.1.0 -m "yt2stems v0.1.0"
+git push origin main
+git push origin v0.1.0
+```
+
+Use the prepared release notes in `docs/releases/v0.1.0.md` when reviewing or editing the GitHub release body.
 
 ## GitHub release flow
 

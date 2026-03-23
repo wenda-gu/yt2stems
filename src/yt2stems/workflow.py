@@ -897,6 +897,8 @@ def run_pipeline(options: RunOptions, config: AppConfig) -> int:
                 "in this environment."
             )
 
+        remove_path(log_path)
+
         print("Step 3/3 - Finalizing output...")
         shutil.move(str(work_dir), str(final_destination))
         work_dir = final_destination

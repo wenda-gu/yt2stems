@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest import mock
 
 import yt2stems.workflow as workflow
+from yt2stems.config import AppConfig
 from yt2stems.tooling import Tooling
 from yt2stems.workflow import (
     AuthSession,
@@ -358,6 +359,95 @@ class WorkflowTests(unittest.TestCase):
                 metadata_path.read_text(encoding="utf-8"),
                 "Title: Example Song\nSource URL: https://www.youtube.com/watch?v=C8wpfQ5pdfo\n",
             )
+
+
+    def test_run_pipeline_keeps_source_audio_but_drops_demucs_log(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            out_root = root / "output"
+            env_prefix = root / "venv"
+            bin_dir = env_prefix / "bin"
+            bin_dir.mkdir(parents=True)
+            python_bin = bin_dir / "python"
+            python_bin.write_text("", encoding="utf-8")
+            yt_dlp_bin = bin_dir / "yt-dlp"
+            yt_dlp_bin.write_text("", encoding="utf-8")
+            demucs_bin = bin_dir / "demucs"
+            demucs_bin.write_text("", encoding="utf-8")
+            ffmpeg_bin = bin_dir / "ffmpeg"
+            ffmpeg_bin.write_text("", encoding="utf-8")
+            tooling = Tooling(
+                env_prefix=env_prefix,
+                python_bin=python_bin,
+                yt_dlp_bin=yt_dlp_bin,
+                demucs_bin=demucs_bin,
+                ffmpeg_bin=ffmpeg_bin,
+            )
+            options = self.make_options(out_root=out_root)
+            config = AppConfig(default_model="htdemucs_ft", default_device="mps")
+            metadata = workflow.VideoMetadata(
+                title="Example Song",
+                video_id="C8wpfQ5pdfo",
+                normalized_url="https://www.youtube.com/watch?v=C8wpfQ5pdfo",
+                safe_title="Example Song",
+            )
+
+            def fake_download(
+                url: str,
+                destination_dir: Path,
+                yt_dlp_bin: Path,
+                auth_session: AuthSession,
+                options: RunOptions,
+            ) -> Path:
+                source_audio = destination_dir / "source.webm"
+                source_audio.write_text("audio", encoding="utf-8")
+                return source_audio
+
+            def fake_run_demucs(
+                *,
+                demucs_bin: Path,
+                source_audio: Path,
+                model: str,
+                device: str,
+                out_dir: Path,
+                two_stem: str | None,
+                log_path: Path,
+            ) -> None:
+                stem_dir = out_dir / model / source_audio.stem
+                stem_dir.mkdir(parents=True)
+                (stem_dir / "vocals.wav").write_text("vocals", encoding="utf-8")
+                log_path.write_text("ok", encoding="utf-8")
+
+            with mock.patch.object(workflow, "resolve_tooling", return_value=tooling):
+                with mock.patch.object(workflow, "resolve_device", return_value="mps"):
+                    with mock.patch.object(
+                        workflow,
+                        "prepare_auth_session",
+                        return_value=AuthSession(auth_args=[]),
+                    ):
+                        with mock.patch.object(
+                            workflow,
+                            "download_audio",
+                            side_effect=fake_download,
+                        ):
+                            with mock.patch.object(
+                                workflow,
+                                "load_downloaded_metadata",
+                                return_value=metadata,
+                            ):
+                                with mock.patch.object(
+                                    workflow,
+                                    "run_demucs",
+                                    side_effect=fake_run_demucs,
+                                ):
+                                    result = workflow.run_pipeline(options, config)
+
+            final_dir = out_root / "Example Song [C8wpfQ5pdfo]"
+            self.assertEqual(result, 0)
+            self.assertTrue((final_dir / "source.webm").exists())
+            self.assertTrue((final_dir / "metadata.txt").exists())
+            self.assertTrue((final_dir / "stems" / "vocals.wav").exists())
+            self.assertFalse((final_dir / ".demucs.log").exists())
 
     def test_format_model_note_known_models(self) -> None:
         self.assertIsNotNone(format_model_note("htdemucs_ft"))

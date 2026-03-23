@@ -1,4 +1,4 @@
-.PHONY: test lint build check clean release-sha256
+.PHONY: test lint build check clean release-check release-sha256
 
 test:
 	python -m unittest
@@ -10,6 +10,8 @@ build:
 	python -m build
 
 check: lint test build
+
+release-check: check
 
 clean:
 	rm -rf build dist src/yt2stems/__pycache__ tests/__pycache__
