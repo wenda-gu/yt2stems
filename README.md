@@ -51,6 +51,14 @@ The Homebrew formula installs the bootstrap commands. `yt2stems-setup` then crea
 
 If `~/.local/bin` is not already on your `PATH`, add it to your shell profile.
 
+If Python package downloads are slow or unstable in China, you can point setup at the Tsinghua PyPI mirror:
+
+```bash
+PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
+PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn \
+yt2stems-setup --cookies-from-browser chrome
+```
+
 ## Install From GitHub
 
 Clone the repository and run the setup command:

@@ -7,6 +7,14 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-03-23
+
+### Fixed
+- Fixed the bootstrap scripts so they resolve their real source directory when launched through symlinks, which unblocks the Homebrew installation path
+
+### Changed
+- Documented a Tsinghua PyPI mirror setup option for users in China when `pip` downloads are unstable
+
 ## [0.1.0] - 2026-03-23
 
 ### Added
