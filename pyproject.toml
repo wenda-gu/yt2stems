@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "yt2stems"
+version = "0.1.0"
+description = "CLI to download YouTube audio and split stems with Demucs."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Wenda Gu" }
+]
+keywords = ["audio", "demucs", "youtube", "yt-dlp", "stems"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: End Users/Desktop",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Sound/Audio",
+  "Topic :: Utilities",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/wenda-gu/yt2stems"
+Repository = "https://github.com/wenda-gu/yt2stems"
+Issues = "https://github.com/wenda-gu/yt2stems/issues"
+Changelog = "https://github.com/wenda-gu/yt2stems/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2.2",
+  "ruff>=0.11.0",
+]
+
+[project.scripts]
+yt2stems = "yt2stems.cli:main"
+yt2stems-benchmark = "yt2stems.benchmark:main"
+yt2stems-install = "yt2stems.install:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/yt2stems"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/tests",
+  "/LICENSE",
+  "/README.md",
+  "/CONTRIBUTING.md",
+  "/SECURITY.md",
+  "/CODE_OF_CONDUCT.md",
+  "/CHANGELOG.md",
+  "/docs",
+  "/yt2stems",
+  "/yt2stems-setup",
+  "/demucs_benchmark.sh",
+  "/install-yt2stems.sh",
+  "/Makefile",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
