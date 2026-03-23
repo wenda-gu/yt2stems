@@ -31,6 +31,26 @@ On macOS with Homebrew:
 brew install ffmpeg python
 ```
 
+## Install With Homebrew
+
+Use the public tap and then run the bootstrap setup command:
+
+```bash
+brew tap wenda-gu/tap
+brew install yt2stems
+yt2stems-setup
+```
+
+If you usually need browser cookies for YouTube, you can save that preference during setup:
+
+```bash
+yt2stems-setup --cookies-from-browser chrome
+```
+
+The Homebrew formula installs the bootstrap commands. `yt2stems-setup` then creates the dedicated runtime environment, installs the heavy audio stack, and links `yt2stems` and `yt2stems-benchmark` into `~/.local/bin` by default.
+
+If `~/.local/bin` is not already on your `PATH`, add it to your shell profile.
+
 ## Install From GitHub
 
 Clone the repository and run the setup command:
