@@ -7,6 +7,12 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-03-23
+
+### Fixed
+- Fixed the Homebrew bootstrap path so `yt2stems-setup` can install from the Homebrew keg layout where `LICENSE`, `README.md`, and `CHANGELOG.md` live outside `libexec`
+- Copied Homebrew-managed metadata files back into `libexec` in the tap formula as an extra safeguard
+
 ## [0.1.2] - 2026-03-23
 
 ### Fixed

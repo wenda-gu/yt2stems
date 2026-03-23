@@ -19,6 +19,17 @@ DEMUCS_SPEC="${YT2STEMS_DEMUCS_SPEC:-demucs==4.0.1}"
 YTDLP_SPEC="${YT2STEMS_YTDLP_SPEC:-yt-dlp[default]}"
 SOUNDFILE_SPEC="${YT2STEMS_SOUNDFILE_SPEC:-soundfile>=0.13}"
 
+cleanup_paths=()
+
+cleanup() {
+  local path
+  for path in "${cleanup_paths[@]:-}"; do
+    [[ -n "$path" ]] || continue
+    rm -rf "$path"
+  done
+}
+trap cleanup EXIT
+
 show_help() {
   cat <<'HELP'
 Usage: ./install-yt2stems.sh [yt2stems-install options]
@@ -68,6 +79,40 @@ require_cmd() {
   }
 }
 
+stage_package_source() {
+  local source_dir="$SCRIPT_DIR"
+  local parent_dir
+  parent_dir="$(cd "$source_dir/.." && pwd)"
+  local metafiles=(LICENSE README.md CHANGELOG.md)
+  local file
+  local needs_staging=0
+
+  for file in "${metafiles[@]}"; do
+    if [[ ! -e "$source_dir/$file" && -e "$parent_dir/$file" ]]; then
+      needs_staging=1
+      break
+    fi
+  done
+
+  if [[ "$needs_staging" -eq 0 ]]; then
+    printf '%s\n' "$source_dir"
+    return 0
+  fi
+
+  local staging_dir
+  staging_dir="$(mktemp -d "${TMPDIR:-/tmp}/yt2stems-source.XXXXXX")"
+  cleanup_paths+=("$staging_dir")
+  rsync -a "$source_dir/" "$staging_dir/"
+
+  for file in "${metafiles[@]}"; do
+    if [[ -e "$parent_dir/$file" && ! -e "$staging_dir/$file" ]]; then
+      cp "$parent_dir/$file" "$staging_dir/$file"
+    fi
+  done
+
+  printf '%s\n' "$staging_dir"
+}
+
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   show_help
   exit 0
@@ -79,6 +124,7 @@ PYTHON_BIN="$(pick_python)" || {
 }
 
 require_cmd ffmpeg
+require_cmd rsync
 
 mkdir -p "$DATA_DIR"
 
@@ -90,6 +136,7 @@ else
 fi
 
 VENV_PYTHON="$VENV_DIR/bin/python"
+PACKAGE_SOURCE_DIR="$(stage_package_source)"
 
 echo "Upgrading pip tooling..."
 "$VENV_PYTHON" -m pip install --upgrade pip setuptools wheel
@@ -98,7 +145,7 @@ echo "Installing runtime dependencies..."
 "$VENV_PYTHON" -m pip install "$TORCH_SPEC" "$TORCHAUDIO_SPEC" "$DEMUCS_SPEC" "$YTDLP_SPEC" "$SOUNDFILE_SPEC"
 
 echo "Installing yt2stems package..."
-"$VENV_PYTHON" -m pip install --upgrade --force-reinstall --no-deps "$SCRIPT_DIR"
+"$VENV_PYTHON" -m pip install --upgrade --force-reinstall --no-deps "$PACKAGE_SOURCE_DIR"
 
 echo "Configuring yt2stems..."
 "$VENV_DIR/bin/yt2stems-install" --bin-dir "$BIN_DIR" "$@"
